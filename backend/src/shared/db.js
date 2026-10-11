@@ -177,7 +177,10 @@ async function getAwsDocClient() {
 class DynamoDbAdapter {
   constructor() {
     this.inMemory = new InMemoryDbClient();
-    this.useAws = Boolean(process.env.AWS_REGION && !process.env.USE_IN_MEMORY_DB && process.env.NODE_ENV === 'production');
+    this.useAws = Boolean(
+      (process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT || process.env.USE_AWS_DDB || process.env.NODE_ENV === 'production') &&
+      !process.env.USE_IN_MEMORY_DB
+    );
   }
 
   async get(tableName, key) {

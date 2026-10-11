@@ -135,7 +135,7 @@ export function TankerList({
 
       {/* Tanker List */}
       {!isLoading && filteredAndSortedTankers.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div className="tanker-cards-scroll">
           {filteredAndSortedTankers.map((tanker) => (
             <TankerCard
               key={tanker.tankerId}

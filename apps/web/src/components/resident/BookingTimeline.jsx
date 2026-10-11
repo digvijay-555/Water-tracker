@@ -27,19 +27,19 @@ export function BookingTimeline({
 
   if (bookings.length === 0 && !activeRequest) {
     return (
-      <div className="empty-state-box" style={{ marginTop: '20px' }}>
-        <div className="empty-icon">📋</div>
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '4px' }}>
+      <div className="card text-center" style={{ padding: '3rem 1.5rem', marginTop: '1rem' }}>
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📋</div>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.35rem' }}>
           No Active Water Bookings
         </h3>
-        <p style={{ fontSize: '0.85rem' }}>
-          Select a nearby tanker or submit a request above to track live dispatch status.
+        <p className="text-muted" style={{ fontSize: '0.85rem', maxWidth: '420px', margin: '0 auto' }}>
+          Select a nearby tanker on the map or submit a delivery request to track live telemetry dispatch.
         </p>
       </div>
     );
   }
 
-  // Find the primary active booking or request
+  // Find primary active booking or request
   const currentBooking = bookings[0] || null;
   const currentStatus = currentBooking?.status || activeRequest?.status || 'OPEN';
 
@@ -67,7 +67,7 @@ export function BookingTimeline({
         <div className="tracker-header">
           <div>
             <span className="tracker-id">
-              {currentBooking ? `Booking ID: ${currentBooking.bookingId}` : `Request ID: ${activeRequest?.requestId}`}
+              {currentBooking ? `Booking ID: #${currentBooking.bookingId}` : `Request ID: #${activeRequest?.requestId}`}
             </span>
             <h3 className="tracker-title">
               Live Delivery Status:{' '}
@@ -77,11 +77,10 @@ export function BookingTimeline({
             </h3>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               type="button"
-              className="btn btn-secondary"
-              style={{ padding: '6px 12px', fontSize: '0.8rem', minHeight: '36px' }}
+              className="btn btn-secondary btn-sm"
               onClick={onRefresh}
               title="Fetch latest dispatch and GPS updates"
             >
@@ -89,11 +88,11 @@ export function BookingTimeline({
             </button>
             <label
               style={{
-                fontSize: '0.75rem',
-                color: 'var(--text-muted)',
-                display: 'flex',
+                fontSize: '0.78rem',
+                color: 'var(--color-text-muted)',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '0.35rem',
                 cursor: 'pointer',
               }}
             >
@@ -127,65 +126,46 @@ export function BookingTimeline({
         </div>
 
         {/* Linked Details Card */}
-        <div
-          style={{
-            backgroundColor: 'var(--bg-subtle)',
-            border: '1px solid var(--border-light)',
-            borderRadius: '10px',
-            padding: '14px 18px',
-            marginTop: '16px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '12px',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Your Requested Water
+        <div className="tracker-details-card">
+          <div className="tracker-detail-col">
+            <span className="tracker-detail-label">Your Requested Water</span>
+            <div className="tracker-detail-val">
+              {activeRequest?.quantityLitres?.toLocaleString() || currentBooking?.totalQuantityLitres?.toLocaleString() || '2,000'} Litres
             </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              {activeRequest?.quantityLitres?.toLocaleString() || '2,000'} Litres
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              {activeRequest?.waterType === 'DRINKING' ? 'Drinking Water' : 'Non-Drinking / Utility'}
+            <div className="tracker-detail-sub">
+              {activeRequest?.waterType === 'DRINKING' ? '💧 Drinking Utility' : '🪣 Non-Drinking Utility'}
             </div>
           </div>
 
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Confirmed Price Quote
-            </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0369a1' }}>
+          <div className="tracker-detail-col">
+            <span className="tracker-detail-label">Confirmed Price Quote</span>
+            <div className="tracker-detail-val highlight-price">
               ₹{(currentBooking?.quotedPrice || activeRequest?.quotedPrice || 1000).toLocaleString()}
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              {currentBooking?.requestIds?.length > 1 ? '🤝 Pooled Delivery Rate' : 'Direct Single Rate'}
+            <div className="tracker-detail-sub">
+              {currentBooking?.requestIds?.length > 1 || currentBooking?.isPooled ? '🤝 Pooled Delivery Rate' : 'Direct Single Rate'}
             </div>
           </div>
 
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Assigned Supplier
-            </div>
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>
+          <div className="tracker-detail-col">
+            <span className="tracker-detail-label">Assigned Tanker</span>
+            <div className="tracker-detail-val">
               {linkedTanker?.displayName || 'Awaiting assignment'}
             </div>
             {linkedTanker?.contactNumber && (
-              <div style={{ fontSize: '0.78rem', color: 'var(--color-primary)', fontWeight: 600 }}>
+              <div className="tracker-detail-sub text-primary">
                 📞 {linkedTanker.contactNumber}
               </div>
             )}
           </div>
 
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-subtle)', fontWeight: 600, textTransform: 'uppercase' }}>
-              Tanker Location Freshness
-            </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>
+          <div className="tracker-detail-col">
+            <span className="tracker-detail-label">Telemetry Freshness</span>
+            <div className="tracker-detail-val" style={{ fontSize: '0.92rem' }}>
               Updated {freshnessText}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Coordinates: {linkedTanker?.latitude ? `${linkedTanker.latitude.toFixed(4)}, ${linkedTanker.longitude.toFixed(4)}` : 'En route'} ({linkedTanker?.locationSource || 'SIMULATED'})
+            <div className="tracker-detail-sub font-mono">
+              {linkedTanker?.latitude ? `${linkedTanker.latitude.toFixed(4)}° N, ${linkedTanker.longitude.toFixed(4)}° E` : 'En route'} ({linkedTanker?.locationSource || 'SIMULATED'})
             </div>
           </div>
         </div>
@@ -193,3 +173,5 @@ export function BookingTimeline({
     </div>
   );
 }
+
+export default BookingTimeline;

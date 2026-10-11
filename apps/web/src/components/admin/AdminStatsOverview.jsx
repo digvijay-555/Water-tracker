@@ -3,16 +3,6 @@ import React from 'react';
 export function AdminStatsOverview({ stats = {} }) {
   return (
     <div className="admin-stats-overview">
-      <div className="admin-warning-banner">
-        <span className="warning-icon">🛡️</span>
-        <div>
-          <strong>Municipal &amp; Fleet Administration Console (Demo Mode)</strong>
-          <p>
-            This portal is for system simulation and demonstration. It is not currently protected by production OAuth/Cognito credentials. Do not use for actual municipal dispatch without authentication.
-          </p>
-        </div>
-      </div>
-
       <div className="stats-kpi-grid">
         <div className="kpi-card card">
           <div className="kpi-header">
@@ -68,3 +58,5 @@ export function AdminStatsOverview({ stats = {} }) {
     </div>
   );
 }
+
+export default AdminStatsOverview;

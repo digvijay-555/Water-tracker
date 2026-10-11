@@ -70,6 +70,14 @@ export async function handler(event) {
       updatedAt: nowIso,
     };
 
+    // Clean up prior solo bookings for matched requests
+    for (const reqId of poolResult.matchedRequestIds) {
+      const priorReq = allRequests.find(r => r.requestId === reqId);
+      if (priorReq && priorReq.bookingId && priorReq.bookingId !== bookingId) {
+        await db.delete(BOOKINGS_TABLE, { bookingId: priorReq.bookingId });
+      }
+    }
+
     await db.put(BOOKINGS_TABLE, candidateBooking);
 
     // Update status and bookingId for matched requests without losing individual quantities

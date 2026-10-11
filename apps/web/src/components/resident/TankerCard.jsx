@@ -1,4 +1,6 @@
 import React from 'react';
+import { StatusBadge } from '../shared/StatusBadge.jsx';
+import { VerificationBadge } from '../shared/VerificationBadge.jsx';
 
 export function TankerCard({
   tanker,
@@ -52,26 +54,18 @@ export function TankerCard({
           <h3 className="tanker-name">{displayName}</h3>
           <div className="tanker-meta-row">
             {distanceKm !== undefined && (
-              <span className="tanker-distance">📍 {distanceKm} km away</span>
+              <span className="tanker-distance">📍 {distanceKm} km away (~{Math.round(distanceKm * 6 + 5)} min ETA)</span>
+            )}
+            {distanceKm !== undefined && distanceKm < 1.0 && (
+              <span className="badge badge-available" style={{ fontSize: '10px', fontWeight: 800 }}>⚡ Closest</span>
             )}
             {locality && <span className="tanker-locality">• {locality}</span>}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-          <span className={`badge badge-${status.toLowerCase()}`}>{status}</span>
-          <span
-            className={`badge ${
-              verificationStatus === 'VERIFIED' ? 'badge-verified' : 'badge-unverified'
-            }`}
-            title={
-              verificationStatus === 'VERIFIED'
-                ? 'Identity & registration verified by local portal operator'
-                : 'Unverified supplier'
-            }
-          >
-            {verificationStatus === 'VERIFIED' ? '✓ Verified' : 'Unverified'}
-          </span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          <StatusBadge status={status} size="sm" />
+          <VerificationBadge status={verificationStatus} />
         </div>
       </div>
 
@@ -140,3 +134,5 @@ export function TankerCard({
     </article>
   );
 }
+
+export default TankerCard;

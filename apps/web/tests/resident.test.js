@@ -37,7 +37,7 @@ const proxyAssert = wrapAssert(assert);
 
 async function runResidentTests() {
   console.log('====================================================');
-  console.log(' WaterSaathi Resident Experience Test Suite (Person 1)');
+  console.log(' Water Tracker Resident Experience Test Suite (Person 1)');
   console.log('====================================================\n');
 
   // Reset seed data

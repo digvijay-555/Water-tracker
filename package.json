@@ -1,0 +1,30 @@
+{
+  "name": "water-tracker",
+  "version": "1.0.0",
+  "description": "Smart Water-Tanker Discovery, Booking & Live GPS Dispatch Platform for India",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node backend/tests/run-tests.js && node apps/web/tests/resident.test.js",
+    "test:backend": "node backend/tests/run-tests.js",
+    "test:web": "node apps/web/tests/resident.test.js",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:web": "npm --prefix apps/web run build",
+    "start:backend": "node backend/src/local-server.js",
+    "seed:local": "node scripts/seed-demo-data.js",
+    "seed:aws": "node scripts/seed-aws.js"
+  },
+  "keywords": [
+    "water-tracker",
+    "water-tanker",
+    "aws-lambda",
+    "dynamodb",
+    "api-gateway",
+    "cloudfront",
+    "s3",
+    "react",
+    "serverless"
+  ],
+  "author": "Water Tracker Engineering Team",
+  "license": "ISC"
+}

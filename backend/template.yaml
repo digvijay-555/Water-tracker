@@ -18,6 +18,7 @@ Globals:
         BOOKINGS_TABLE: !Ref BookingsTable
         REPORTS_TABLE: !Ref ShortageReportsTable
         CORS_ALLOW_ORIGIN: '*'
+        NODE_ENV: production
   Api:
     Cors:
       AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
@@ -123,6 +124,8 @@ Resources:
             TableName: !Ref RequestsTable
         - DynamoDBReadPolicy:
             TableName: !Ref TankersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingsTable
       Events:
         CreateRequest:
           Type: Api
@@ -177,6 +180,8 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref BookingsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref RequestsTable
       Events:
         ListBookings:
           Type: Api

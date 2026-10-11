@@ -40,7 +40,7 @@ const proxyAssert = wrapAssert(assert);
 
 async function runAll() {
   console.log('====================================================');
-  console.log(' WaterSaathi Test Suite (Person 2 Backend & Person 3 Operator/E2E)');
+  console.log(' Water Tracker Test Suite (Person 2 Backend & Person 3 Operator/E2E)');
   console.log('====================================================\n');
 
   const testSuites = [

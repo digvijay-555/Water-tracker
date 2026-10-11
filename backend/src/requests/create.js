@@ -12,10 +12,11 @@ import {
   validateWaterType,
 } from '../shared/validation.js';
 import { calculateQuote, PRICE_BOUNDS } from '../shared/pricing.js';
-import { RequestStatus } from '../../../shared/types.js';
+import { RequestStatus, BookingStatus, TankerStatus } from '../../../shared/types.js';
 
 const REQUESTS_TABLE = process.env.REQUESTS_TABLE || 'WaterSaathi-Requests';
 const TANKERS_TABLE = process.env.TANKERS_TABLE || 'WaterSaathi-Tankers';
+const BOOKINGS_TABLE = process.env.BOOKINGS_TABLE || 'WaterSaathi-Bookings';
 
 export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') {
@@ -92,6 +93,29 @@ export async function handler(event) {
     const now = new Date().toISOString();
     const requestId = idempotencyKey || `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+    // Assign preferred tanker or first available tanker
+    let assignedTankerId = tankerId;
+    if (!assignedTankerId) {
+      const allTankers = await db.scan(TANKERS_TABLE);
+      const avail = allTankers.find(t => t.status === TankerStatus.AVAILABLE && (t.availableLitres || 0) >= qtyVal.quantityLitres);
+      assignedTankerId = avail?.tankerId || 'tanker-001';
+    }
+
+    const bookingId = `book-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const newBooking = {
+      bookingId,
+      tankerId: assignedTankerId,
+      requestIds: [requestId],
+      quotedPrice: quote.quotedPriceInr,
+      quotedPricePaise: quote.quotedPricePaise,
+      totalQuantityLitres: qtyVal.quantityLitres,
+      deliveryWindowStart: timeVal.date,
+      status: BookingStatus.OPEN,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await db.put(BOOKINGS_TABLE, newBooking);
+
     const newRequest = {
       requestId,
       requesterId: requesterId.trim(),
@@ -104,7 +128,8 @@ export async function handler(event) {
       quotedPrice: quote.quotedPriceInr,
       quotedPricePaise: quote.quotedPricePaise,
       ratePer1000Litres: quote.ratePer1000Litres,
-      bookingId: null,
+      bookingId,
+      tankerId: assignedTankerId,
       createdAt: now,
       updatedAt: now,
     };

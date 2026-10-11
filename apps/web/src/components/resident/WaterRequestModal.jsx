@@ -21,7 +21,6 @@ export function WaterRequestModal({
   useEffect(() => {
     if (isOpen) {
       const defaultDate = new Date(Date.now() + 1000 * 60 * 60 * 2);
-      // Format YYYY-MM-DDTHH:MM
       const year = defaultDate.getFullYear();
       const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
       const day = String(defaultDate.getDate()).padStart(2, '0');
@@ -98,7 +97,7 @@ export function WaterRequestModal({
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-request-title">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 id="modal-request-title">
+          <h3 id="modal-request-title" style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>
             <span>💧 Request Water Delivery</span>
           </h3>
           <button
@@ -115,21 +114,24 @@ export function WaterRequestModal({
           {tanker && (
             <div
               style={{
-                backgroundColor: 'var(--bg-muted)',
-                padding: '10px 14px',
-                borderRadius: '8px',
+                backgroundColor: 'var(--color-surface-muted)',
+                border: '1px solid var(--color-border)',
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
                 marginBottom: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap',
               }}
             >
               <div>
-                <strong style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
+                <strong style={{ fontSize: '0.95rem', color: 'var(--color-text-main)' }}>
                   {tanker.displayName}
                 </strong>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  Rate: ₹{tanker.pricePer1000Litres} / 1000L • Available: {tanker.availableLitres.toLocaleString()}L
+                <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                  Rate: ₹{tanker.pricePer1000Litres} / 1000L &bull; Available: {tanker.availableLitres?.toLocaleString()} L
                 </div>
               </div>
               <span className="badge badge-available">Selected</span>
@@ -137,19 +139,22 @@ export function WaterRequestModal({
           )}
 
           {/* Quantity Selector */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="request-quantity-input">
+          <div className="form-group" style={{ marginBottom: '14px' }}>
+            <label className="input-label" htmlFor="request-quantity-input">
               Quantity Required (Litres)
             </label>
-            <div className="form-sublabel">Select standard quantity or enter custom amount:</div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+              Select standard capacity or enter custom amount:
+            </div>
 
-            <div className="quantity-pills">
+            <div className="quantity-pills" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
               {PRESET_QUANTITIES.map((qty) => (
                 <button
                   type="button"
                   key={qty}
-                  className={`quantity-pill ${Number(quantityLitres) === qty ? 'active' : ''}`}
+                  className={`btn btn-sm ${Number(quantityLitres) === qty ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => setQuantityLitres(qty)}
+                  style={{ borderRadius: 'var(--radius-pill)', padding: '4px 12px' }}
                 >
                   {qty >= 1000 ? `${qty / 1000}k L` : `${qty} L`}
                 </button>
@@ -171,23 +176,23 @@ export function WaterRequestModal({
           </div>
 
           {/* Water Category */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="water-type-select">Water Category</label>
+          <div className="form-group" style={{ marginBottom: '14px' }}>
+            <label className="input-label" htmlFor="water-type-select">Water Category</label>
             <select
               id="water-type-select"
-              className="form-input"
+              className="form-select"
               value={waterType}
               onChange={(e) => setWaterType(e.target.value)}
               disabled={tanker && tanker.waterType}
             >
-              <option value="NON_DRINKING">Utility / Non-Drinking Water (Cleaning, Construction, Gardening)</option>
+              <option value="NON_DRINKING">Utility / Non-Drinking Water (Cleaning, Construction, Sanitation)</option>
               <option value="DRINKING">Drinking / Potable Water (Supplied in food-grade tanker)</option>
             </select>
           </div>
 
           {/* Delivery Window */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="delivery-window-input">
+          <div className="form-group" style={{ marginBottom: '14px' }}>
+            <label className="input-label" htmlFor="delivery-window-input">
               Preferred Delivery Window Start
             </label>
             <input
@@ -201,9 +206,9 @@ export function WaterRequestModal({
           </div>
 
           {/* Address */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="delivery-address-input">
-              Delivery Locality & Address Details
+          <div className="form-group" style={{ marginBottom: '14px' }}>
+            <label className="input-label" htmlFor="delivery-address-input">
+              Delivery Locality &amp; Address Details
             </label>
             <input
               id="delivery-address-input"
@@ -214,36 +219,39 @@ export function WaterRequestModal({
               placeholder="Society name, building / plot number, landmark..."
               required
             />
-            <div className="form-sublabel" style={{ marginTop: '4px' }}>
-              Coordinates: {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)} ({localityName})
+            <div style={{ fontSize: '0.74rem', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              Coordinates: {currentLocation.lat.toFixed(4)}° N, {currentLocation.lng.toFixed(4)}° E ({localityName})
             </div>
           </div>
 
           {/* Transparent Price Quote */}
-          <div className="quote-box">
-            <div className="quote-row">
+          <div
+            className="quote-box"
+            style={{
+              backgroundColor: 'var(--color-surface-muted)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 16px',
+              marginBottom: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div>
-                <div className="quote-title">Transparent Price Quote</div>
-                <div className="quote-note">
+                <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-text-main)' }}>
+                  Transparent Price Quote
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--color-text-muted)' }}>
                   Calculated at ₹{currentRate} per 1,000L for {Number(quantityLitres || 0).toLocaleString()} litres
                 </div>
               </div>
-              <div className="quote-amount">₹{estimatedQuoteInr.toLocaleString()}</div>
+              <div style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--color-primary)' }}>
+                ₹{estimatedQuoteInr.toLocaleString()}
+              </div>
             </div>
           </div>
 
           {validationError && (
-            <div
-              style={{
-                marginBottom: '16px',
-                padding: '10px 14px',
-                backgroundColor: '#fff1f2',
-                border: '1px solid #fecdd3',
-                borderRadius: '8px',
-                color: '#be123c',
-                fontSize: '0.85rem',
-              }}
-            >
+            <div className="status-feedback feedback-error" style={{ marginBottom: '16px' }}>
               ⚠️ {validationError}
             </div>
           )}
@@ -271,3 +279,5 @@ export function WaterRequestModal({
     </div>
   );
 }
+
+export default WaterRequestModal;

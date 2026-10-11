@@ -110,17 +110,7 @@ export function LocationBar({
         </div>
 
         {geoError && (
-          <div
-            style={{
-              marginTop: '10px',
-              padding: '8px 12px',
-              backgroundColor: '#fff1f2',
-              border: '1px solid #fecdd3',
-              borderRadius: '6px',
-              color: '#9f1239',
-              fontSize: '0.82rem',
-            }}
-          >
+          <div className="status-feedback feedback-error" style={{ marginTop: '10px' }}>
             ⚠️ {geoError}
           </div>
         )}

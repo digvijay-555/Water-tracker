@@ -3,21 +3,24 @@ import React from 'react';
 export function ActiveTripBanner({ activeBooking, tanker, onCompleteDelivery }) {
   if (!activeBooking && tanker?.status !== 'EN_ROUTE') return null;
 
+  const volume = activeBooking?.totalQuantityLitres?.toLocaleString() || tanker?.capacityLitres?.toLocaleString() || '5,000';
+  const stops = activeBooking?.requests?.length || 1;
+
   return (
-    <div className="active-trip-banner">
+    <div className="active-trip-banner" role="status">
       <div className="active-trip-content">
         <div className="pulse-indicator">
-          <span className="pulse-dot" />
-          <span className="pulse-label">ACTIVE TRIP IN PROGRESS</span>
+          <span className="pulse-dot" aria-hidden="true" />
+          <span className="pulse-label">LIVE DISPATCH IN TRANSIT</span>
         </div>
         <div className="active-trip-details">
           <strong>Tanker: {tanker?.displayName || 'Active Tanker'}</strong> &bull;{' '}
           {activeBooking ? (
             <span>
-              Booking #{activeBooking.bookingId} ({activeBooking.totalQuantityLitres || activeBooking.quotedPrice}L / {activeBooking.requests?.length || 1} Stop(s))
+              Booking #{activeBooking.bookingId} ({volume} L &bull; {stops} Drop{stops > 1 ? 's' : ''})
             </span>
           ) : (
-            <span>Tanker marked EN ROUTE</span>
+            <span>Actively En Route to Destination</span>
           )}
         </div>
       </div>
@@ -34,3 +37,5 @@ export function ActiveTripBanner({ activeBooking, tanker, onCompleteDelivery }) 
     </div>
   );
 }
+
+export default ActiveTripBanner;

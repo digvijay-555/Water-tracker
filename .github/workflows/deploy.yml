@@ -1,0 +1,104 @@
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy Full-Stack to AWS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'apps/web/package.json'
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-south-1' }}
+
+      - name: Run Test Suite
+        run: |
+          node backend/tests/run-tests.js
+          node apps/web/tests/resident.test.js
+
+      - name: Build SAM Infrastructure
+        run: sam build --template-file template.yaml
+
+      - name: Deploy SAM CloudFormation Stack
+        run: |
+          sam deploy \
+            --stack-name water-tracker \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset
+
+      - name: Seed Live DynamoDB Tables
+        env:
+          STACK_NAME: water-tracker
+          AWS_REGION: ${{ secrets.AWS_REGION || 'ap-south-1' }}
+        run: node scripts/seed-aws.js
+
+      - name: Build React Frontend
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name water-tracker \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --query "Stacks[0].Outputs[?OutputKey=='WaterTrackerApiEndpoint'].OutputValue" \
+            --output text)
+          echo "API Gateway Endpoint: $API_URL"
+          cd apps/web
+          npm ci
+          VITE_USE_MOCK_API=false VITE_API_BASE_URL="${API_URL%/}" npm run build
+          cd ../..
+
+      - name: Sync Frontend to S3 & Invalidate CloudFront
+        run: |
+          BUCKET_NAME=$(aws cloudformation describe-stacks \
+            --stack-name water-tracker \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
+            --output text)
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name water-tracker \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+          FRONTEND_URL=$(aws cloudformation describe-stacks \
+            --stack-name water-tracker \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendUrl'].OutputValue" \
+            --output text)
+
+          echo "Uploading bundle to s3://$BUCKET_NAME..."
+          aws s3 sync apps/web/dist "s3://$BUCKET_NAME" --delete
+
+          echo "Invalidating CloudFront CDN cache for $DIST_ID..."
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+
+          echo "=================================================="
+          echo "🚀 Deployed successfully to: $FRONTEND_URL"
+          echo "=================================================="

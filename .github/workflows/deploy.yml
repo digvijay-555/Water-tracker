@@ -80,7 +80,7 @@ jobs:
             --output text)
           echo "API Gateway Endpoint: $API_URL"
           cd apps/web
-          npm ci
+          npm install
           VITE_USE_MOCK_API=false VITE_API_BASE_URL="${API_URL%/}" npm run build
           cd ../..
 

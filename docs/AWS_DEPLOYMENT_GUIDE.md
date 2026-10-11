@@ -134,9 +134,8 @@ During the interactive prompt, enter:
 
 Once deployment succeeds, copy the outputs from the terminal:
 - `WaterTrackerApiEndpoint`: e.g. `https://abc123xyz.execute-api.ap-south-1.amazonaws.com/Prod/`
-- `FrontendUrl`: e.g. `https://d111111abcdef8.cloudfront.net`
+- `FrontendUrl`: e.g. `http://water-tracker-web-123456789012-ap-south-1.s3-website.ap-south-1.amazonaws.com`
 - `FrontendBucketName`: e.g. `water-tracker-web-123456789012-ap-south-1`
-- `CloudFrontDistributionId`: e.g. `E1234567890ABC`
 
 ### Step 4: Seed Demonstration Records into Live DynamoDB
 ```bash
@@ -156,16 +155,13 @@ VITE_USE_MOCK_API=false VITE_API_BASE_URL="https://<YOUR_API_ID>.execute-api.ap-
 cd ../..
 ```
 
-### Step 6: Upload Bundle to Amazon S3 & Invalidate CloudFront
+### Step 6: Upload Bundle to Amazon S3 Website Bucket
 ```bash
 # Upload web assets
 aws s3 sync apps/web/dist s3://<YOUR_FRONTEND_BUCKET_NAME> --delete
-
-# Invalidate CDN cache for immediate propagation
-aws cloudfront create-invalidation --distribution-id <YOUR_DISTRIBUTION_ID> --paths "/*"
 ```
 
-Open `https://<YOUR_CLOUDFRONT_DOMAIN>` in your browser!
+Open your `FrontendUrl` in your browser!
 
 ---
 

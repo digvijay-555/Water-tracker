@@ -84,14 +84,8 @@ FRONTEND_BUCKET=$(aws cloudformation describe-stacks \
   --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
   --output text)
 
-DIST_ID=$(aws cloudformation describe-stacks \
-  --stack-name "${STACK_NAME}" \
-  --region "${REGION}" \
-  --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
-  --output text)
-
 echo "Backend API Gateway:  ${API_ENDPOINT}"
-echo "Frontend CloudFront:  ${FRONTEND_URL}"
+echo "Frontend Website:     ${FRONTEND_URL}"
 echo "Frontend S3 Bucket:   ${FRONTEND_BUCKET}"
 echo ""
 
@@ -119,16 +113,11 @@ cd ../..
 echo "✅ React bundle compiled into apps/web/dist"
 echo ""
 
-# 7. Upload to S3 & Invalidate CloudFront CDN Cache
+# 7. Upload to S3 Static Website Bucket
 echo "============================================================"
-echo " Step 5/5: Syncing to S3 & Invalidating CloudFront CDN"
+echo " Step 5/5: Syncing Web Bundle to S3 Static Website"
 echo "============================================================"
 aws s3 sync apps/web/dist "s3://${FRONTEND_BUCKET}" --delete
-
-echo "Invalidating CloudFront cache for instant delivery..."
-aws cloudfront create-invalidation \
-  --distribution-id "${DIST_ID}" \
-  --paths "/*" >/dev/null
 
 echo ""
 echo "============================================================"
@@ -141,6 +130,6 @@ echo ""
 echo "Submission Checklist for Hackathon Judges:"
 echo "  1. Live Demo:      ${FRONTEND_URL}"
 echo "  2. Test Suite:     141+ Automated Unit & Integration Assertions"
-echo "  3. AWS Services:   Amazon CloudFront, Amazon S3, AWS Lambda, Amazon API Gateway, Amazon DynamoDB"
+echo "  3. AWS Services:   Amazon S3 Website, AWS Lambda, Amazon API Gateway, Amazon DynamoDB"
 echo "  4. Locality:       Chhatrapati Sambhajinagar (Aurangabad), Maharashtra"
 echo "============================================================"

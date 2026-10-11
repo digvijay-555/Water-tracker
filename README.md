@@ -21,14 +21,14 @@
 ## 🛠️ Technology Stack & AWS Architecture
 
 - **Frontend:** React 18, Vite 6, Leaflet 1.9, Pure CSS Design System (Light/Dark themes).
-- **Edge CDN & Hosting:** Amazon CloudFront CDN with Origin Access Control (OAC) and Amazon S3 Bucket.
+- **Frontend Hosting:** Amazon S3 Static Website Hosting.
 - **API Ingestion:** Amazon API Gateway (REST API with full CORS support).
 - **Serverless Compute:** 12 AWS Lambda Functions running Node.js 20.x runtime.
 - **Database:** 4 Amazon DynamoDB Tables (`PAY_PER_REQUEST` on-demand billing mode).
 - **Automated Verification:** Pure JavaScript test runner with 141 passing assertions.
 
 ```
-[ Client Browser ] ──HTTPS──> [ Amazon CloudFront CDN ] ──OAC──> [ Amazon S3 Web Bucket ]
+[ Client Browser ] ──HTTP/S──> [ Amazon S3 Static Web Bucket ]
        │
        └──REST API───────────> [ Amazon API Gateway ]
                                       │

@@ -297,59 +297,20 @@ Resources:
             Method: POST
 
   # ==========================================
-  # 3. Frontend Static Hosting (S3 + CloudFront CDN + OAC)
+  # 3. Frontend Static Hosting (Amazon S3 Website Hosting)
   # ==========================================
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "water-tracker-web-${AWS::AccountId}-${AWS::Region}"
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
-  CloudFrontOriginAccessControl:
-    Type: AWS::CloudFront::OriginAccessControl
-    Properties:
-      OriginAccessControlConfig:
-        Name: !Sub "WaterTrackerOAC-${AWS::StackName}"
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-
-  FrontendDistribution:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Enabled: true
-        Comment: "Water Tracker Single Page Application CDN"
-        DefaultRootObject: index.html
-        Origins:
-          - Id: S3FrontendOrigin
-            DomainName: !GetAtt FrontendBucket.RegionalDomainName
-            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
-            S3OriginConfig:
-              OriginAccessIdentity: ""
-        DefaultCacheBehavior:
-          TargetOriginId: S3FrontendOrigin
-          ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods: [GET, HEAD, OPTIONS]
-          CachedMethods: [GET, HEAD]
-          Compress: true
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
-        CustomErrorResponses:
-          - ErrorCode: 403
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-            ErrorCachingMinTTL: 0
-          - ErrorCode: 404
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-            ErrorCachingMinTTL: 0
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
 
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -358,15 +319,11 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Sid: AllowCloudFrontServicePrincipalReadOnly
+          - Sid: PublicReadGetObject
             Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
+            Principal: '*'
             Action: s3:GetObject
             Resource: !Sub "${FrontendBucket.Arn}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution}"
 
 Outputs:
   WaterTrackerApiEndpoint:
@@ -376,8 +333,8 @@ Outputs:
       Name: !Sub "${AWS::StackName}-ApiEndpoint"
 
   FrontendUrl:
-    Description: "Live CloudFront HTTPS URL for the Web Application"
-    Value: !Sub "https://${FrontendDistribution.DomainName}"
+    Description: "Live Public Website URL for the Web Application"
+    Value: !GetAtt FrontendBucket.WebsiteURL
     Export:
       Name: !Sub "${AWS::StackName}-FrontendUrl"
 
@@ -386,12 +343,6 @@ Outputs:
     Value: !Ref FrontendBucket
     Export:
       Name: !Sub "${AWS::StackName}-FrontendBucket"
-
-  CloudFrontDistributionId:
-    Description: "CloudFront Distribution ID for cache invalidation"
-    Value: !Ref FrontendDistribution
-    Export:
-      Name: !Sub "${AWS::StackName}-DistributionId"
 
   TankersTableName:
     Description: "DynamoDB Tankers Table Name"

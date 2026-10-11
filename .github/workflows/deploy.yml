@@ -49,6 +49,15 @@ jobs:
 
       - name: Deploy SAM CloudFormation Stack
         run: |
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name water-tracker --region ${{ secrets.AWS_REGION || 'ap-south-1' }} --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "NOT_FOUND")
+          echo "Current stack status: $STACK_STATUS"
+          if [ "$STACK_STATUS" = "ROLLBACK_COMPLETE" ]; then
+            echo "Stack is in ROLLBACK_COMPLETE state from initial failure. Deleting before re-deploy..."
+            aws cloudformation delete-stack --stack-name water-tracker --region ${{ secrets.AWS_REGION || 'ap-south-1' }}
+            aws cloudformation wait stack-delete-complete --stack-name water-tracker --region ${{ secrets.AWS_REGION || 'ap-south-1' }}
+            echo "Stack cleaned up."
+          fi
+
           sam deploy \
             --stack-name water-tracker \
             --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \

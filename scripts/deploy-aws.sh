@@ -55,6 +55,15 @@ echo " Step 2/5: Building & Deploying Serverless Infrastructure"
 echo "============================================================"
 sam build --template-file template.yaml
 
+# Check if stack is in ROLLBACK_COMPLETE from a previous failed creation
+STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "${STACK_NAME}" --region "${REGION}" --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "NOT_FOUND")
+if [ "${STACK_STATUS}" = "ROLLBACK_COMPLETE" ]; then
+  echo "⚠️ Stack '${STACK_NAME}' is in ROLLBACK_COMPLETE state from initial creation. Deleting stack before re-deploy..."
+  aws cloudformation delete-stack --stack-name "${STACK_NAME}" --region "${REGION}"
+  aws cloudformation wait stack-delete-complete --stack-name "${STACK_NAME}" --region "${REGION}"
+  echo "✅ Stack deleted. Starting clean deployment."
+fi
+
 echo "Deploying CloudFormation stack '${STACK_NAME}'..."
 sam deploy \
   --stack-name "${STACK_NAME}" \
